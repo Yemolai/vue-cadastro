@@ -33,10 +33,17 @@
         inset-delimiter
       >
         <q-list-header>Seções</q-list-header>
+
         <q-item @click.native="navigateTo('/lista')">
           <q-item-side icon="reorder" />
           <q-item-main label="Lista" sublabel="Exibir os registros cadastrados" />
         </q-item>
+
+        <q-item @click.native="navigateTo('/configuracoes')">
+          <q-item-side icon="settings" />
+          <q-item-main label="Configurações" sublabel="Alterar definições, redefinir, ajuda" />
+        </q-item>
+
       </q-list>
     </q-layout-drawer>
 

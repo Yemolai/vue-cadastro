@@ -19,20 +19,23 @@
         row-key="uid"
       />
 
-      <!-- Importar e Exportar -->
-      <q-fab color="primary" icon="swap_vert" direction="up" class="fixed" style="right: 18px; bottom: 18px">
-        <q-fab-action color="primary" @click="importClick" icon="open_in_browser"/>
-        <q-fab-action color="primary" @click="exportClick" icon="save"/>
-      </q-fab>
-      <!-- Fim Importar e Exportar -->
+      <div v-if="configs.showImportAndExport">
+        <!-- Importar e Exportar -->
+        <q-fab color="primary" icon="swap_vert" direction="up" class="fixed" style="right: 18px; bottom: 18px">
+          <q-fab-action color="primary" @click="importClick" icon="open_in_browser"/>
+          <q-fab-action color="primary" @click="exportClick" icon="save"/>
+        </q-fab>
+        <!-- Fim Importar e Exportar -->
 
-      <!-- Necessário para subir o arquivo -->
-      <input id="pegarArquivo" @change="changeImport(this)" ref="pegarArquivo" type="file" hidden>
+        <!-- Necessário para subir o arquivo -->
+        <input id="pegarArquivo" @change="changeImport(this)" ref="pegarArquivo" type="file" hidden>
+      </div>
+
     </q-layout>
 
     <!-- MODALS -->
     <!-- Adicionar Criança -->
-    <q-modal v-model="modals.novaCrianca" content-css="padding: 40px; min-width: 32rem">
+    <q-modal v-model="modals.novaCrianca" content-css="padding: 40px; min-width: 32rem; max-width: 100%">
       <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 2rem">Registrar criança</h4>
       <q-field label="Nome">
         <q-input v-model="form.nome"/>
@@ -48,13 +51,13 @@
       </q-field>
       <div class="row reverse" style="padding-top: 20px">
         <q-btn flat @click="addCrianca(form)" :disable="!formvalid">Salvar</q-btn>
-        <q-btn flat @click="resetForm()">Redefinir</q-btn>
+        <q-btn flat @click="resetForm()">Cancelar</q-btn>
       </div>
     </q-modal>
     <!-- Fim Adicionar Criança -->
 
     <!-- Opção Lista Importada -->
-    <q-modal v-model="modals.oQueFazerLista" content-css="padding: 40px; min-width: 32rem">
+    <q-modal v-model="modals.oQueFazerLista" content-css="padding: 40px; min-width: 32rem; max-width: 100%">
       <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 2rem">Quase lá...</h4>
       <p>Pelo visto, sua lista contém {{ lista.length }} {{ (lista.length > 1) ? "itens" : "item" }}, e você deseja importar outra.</p>
       <p>O que faremos?</p>
@@ -82,10 +85,15 @@ const headers = [
 export default {
   name: 'Lista',
   directives: { mask },
-  beforeMount: function () {
+  beforeMount () {
     const saved = localStorage.getItem('lista')
     if (saved) {
       this.lista = JSON.parse(saved) || []
+    }
+
+    const savedConf = localStorage.getItem('configuracoes')
+    if (savedConf && JSON.parse(savedConf)) {
+      this.configs = JSON.parse(savedConf)
     }
   },
   computed: {
@@ -152,6 +160,7 @@ export default {
         responsavel: null,
         telefone: null
       }
+      this.toggleModal('novaCrianca')
     },
     //
     // FUNÇÕES PARA IMPORTAR E EXPORTAR AS CRIANÇAS (não! não é um tráfico ilegal de pessoas)
@@ -197,19 +206,31 @@ export default {
   },
   data () {
     return {
+      // Filtro
       searchWords: '',
+
+      // Modal está aberto?
       modals: {
         novaCrianca: false,
         oQueFazerLista: false
       },
+
+      // Lista
       lista: [],
       tempLista: [],
+
+      // Formulário
       form: {
         nome: null,
         nascimento: null,
         invaliddate: false,
         responsavel: null,
         telefone: null
+      },
+
+      // Configurações
+      configs: {
+        showImportAndExport: false
       },
       headers
     }
