@@ -86,15 +86,20 @@ export default {
     }
   },
   methods: {
+    //
+    // FUNÇÕES
+    // Abrir (ou fechar) um determinado modal
     toggleModal (modalName) {
       // Abrir se estiver fechado, e fechar se estiver aberto.
       this.modals[modalName] = !this.modals[modalName]
     },
+    // Função para salvar a lista
     setLista (lista) {
       localStorage.setItem('lista', JSON.stringify(lista))
       this.lista = lista
       return true
     },
+    // Função para pegar (retornar) a lista
     getLista () {
       const saved = localStorage.getItem('lista')
       if (saved) {
@@ -102,6 +107,9 @@ export default {
       }
       return []
     },
+    //
+    // FUNÇÕES DO MODAL DE ADICIONAR CRIANÇA
+    // Função que adiciona criança
     addCrianca: function (form) {
       const uid = Math.random()
       const { nome, nascimento, responsavel, telefone } = form
@@ -110,6 +118,7 @@ export default {
       this.toggleModal('novaCrianca')
       this.resetForm()
     },
+    // Função que limpa o formulário do modal
     resetForm () {
       this.form = {
         nome: null,
