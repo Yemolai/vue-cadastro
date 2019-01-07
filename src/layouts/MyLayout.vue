@@ -37,10 +37,6 @@
           <q-item-side icon="reorder" />
           <q-item-main label="Lista" sublabel="Exibir os registros cadastrados" />
         </q-item>
-        <q-item @click.native="navigateTo('/inandout')">
-          <q-item-side icon="swap_vert" />
-          <q-item-main label="Importar/Exportar" sublabel="Recuperar ou salvar os dados" />
-        </q-item>
       </q-list>
     </q-layout-drawer>
 
