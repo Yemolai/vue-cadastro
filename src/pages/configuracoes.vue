@@ -1,10 +1,12 @@
 <template>
   <q-page padding>
     <q-layout>
-
-      <div class="q-mt-md">
+      <div>
         <!-- Icon & Label -->
         <q-btn color="red" icon="delete" @click.native="toggleModal('confirmaExcluir')" label="Apagar os dados" />
+      </div>
+      <div class="q-mt-md">
+        <p>Relatar bugs, código fonte, ajuda, dicas no repositório <a href="https://github.com/Yemolai/vue-cadastro" target="_blank">github.com/Yemolai/vue-cadastro</a></p>
       </div>
     </q-layout>
 
