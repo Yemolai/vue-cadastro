@@ -35,8 +35,8 @@
         <q-input v-model="form.telefone" v-mask="'(##) #####-####'"/>
       </q-field>
       <div class="row reverse" style="padding-top: 20px">
-        <q-btn flat @click.native="resetForm()">Redefinir</q-btn>
-        <q-btn flat @click.native="addCrianca(form)" :disable="!formvalid">Salvar</q-btn>
+        <q-btn flat @click="addCrianca(form)" :disable="!formvalid">Salvar</q-btn>
+        <q-btn flat @click="resetForm()">Redefinir</q-btn>
       </div>
     </q-modal>
     <!-- Fim Adicionar Criança -->
@@ -65,9 +65,9 @@ export default {
   },
   computed: {
     formvalid: function () {
-      const nome = this.form.nome && this.form.nome.length > 5
+      const nome = this.form.nome && this.form.nome.length > 2
       const date = !this.form.invaliddate
-      const resp = this.form.responsavel && this.form.responsavel.length > 5
+      const resp = this.form.responsavel && this.form.responsavel.length > 2
       const tel = this.form.telefone && this.form.telefone.length >= 14
       return nome && date && resp && tel
     }
@@ -90,17 +90,34 @@ export default {
       // Abrir se estiver fechado, e fechar se estiver aberto.
       this.modals[modalName] = !this.modals[modalName]
     },
+    setLista (lista) {
+      localStorage.setItem('lista', JSON.stringify(lista))
+      this.lista = lista
+      return true
+    },
+    getLista () {
+      const saved = localStorage.getItem('lista')
+      if (saved) {
+        return JSON.parse(saved) || []
+      }
+      return []
+    },
     addCrianca: function (form) {
       const uid = Math.random()
       const { nome, nascimento, responsavel, telefone } = form
-      this.lista.push({ uid, nome, nascimento, responsavel, telefone })
-      this.form.nome = null
-      this.form.nascimento = null
-      this.form.invaliddate = false
-      this.form.responsavel = null
-      this.form.telefone = null
-      localStorage.setItem('lista', JSON.stringify(this.lista))
-      this.toggleModal()
+      const tempLista = this.lista.concat({ uid, nome, nascimento, responsavel, telefone })
+      this.setLista(tempLista)
+      this.toggleModal('novaCrianca')
+      this.resetForm()
+    },
+    resetForm () {
+      this.form = {
+        nome: null,
+        nascimento: null,
+        invaliddate: false,
+        responsavel: null,
+        telefone: null
+      }
     }
   },
   data () {
@@ -110,6 +127,7 @@ export default {
         novaCrianca: false
       },
       lista: [],
+      tempLista: [],
       form: {
         nome: null,
         nascimento: null,
