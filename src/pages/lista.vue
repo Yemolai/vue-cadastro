@@ -2,7 +2,7 @@
   <q-page padding>
     <q-layout>
       <div class="row reverse">
-        <q-btn icon="add" @click.native="toggleModal()">&nbsp;</q-btn>
+        <q-btn icon="add" @click.native="toggleModal('novaCrianca')">&nbsp;</q-btn>
       </div>
       <div class="row my-1">
         <div class="col">
@@ -19,7 +19,8 @@
         row-key="uid"
       />
     </q-layout>
-    <q-modal v-model="addModalOpen" content-css="padding: 40px; min-width: 32rem">
+    <!-- Adicionar Criança -->
+    <q-modal v-model="modals.novaCrianca" content-css="padding: 40px; min-width: 32rem">
       <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 2rem">Registrar criança</h4>
       <q-field label="Nome">
         <q-input v-model="form.nome"/>
@@ -38,6 +39,7 @@
         <q-btn flat @click.native="addCrianca(form)" :disable="!formvalid">Salvar</q-btn>
       </div>
     </q-modal>
+    <!-- Fim Adicionar Criança -->
   </q-page>
 </template>
 
@@ -84,8 +86,9 @@ export default {
     }
   },
   methods: {
-    toggleModal: function () {
-      this.addModalOpen = !this.addModalOpen
+    toggleModal (modalName) {
+      // Abrir se estiver fechado, e fechar se estiver aberto.
+      this.modals[modalName] = !this.modals[modalName]
     },
     addCrianca: function (form) {
       const uid = Math.random()
@@ -103,7 +106,9 @@ export default {
   data () {
     return {
       searchWords: '',
-      addModalOpen: false,
+      modals: {
+        novaCrianca: false
+      },
       lista: [],
       form: {
         nome: null,
