@@ -186,9 +186,9 @@ export default {
     // Quando clicar em qualquer opção do modal
     respostaModalLista (resposta) {
       if (resposta === 'substituir') {
-        this.lista = [].concat(this.tempLista)
+        this.setLista([].concat(this.tempLista))
       } else if (resposta === 'mesclar') {
-        this.lista = onlyUniqueId(this.tempLista.concat(this.lista))
+        this.setLista(onlyUniqueId(this.lista.concat(this.tempLista)))
       }
       this.tempLista = []
       this.toggleModal('oQueFazerLista')
