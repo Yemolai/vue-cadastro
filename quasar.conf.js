@@ -56,6 +56,8 @@ module.exports = function (ctx) {
         'QItemMain',
         'QItemSide',
         'QTable',
+        'QFab',
+        'QFabAction',
         'QField',
         'QInput',
         'QDatetime',
