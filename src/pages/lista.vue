@@ -2,7 +2,7 @@
   <q-page padding>
     <q-layout>
       <div class="row reverse">
-        <q-btn icon="add" @click.native="toggleModal('novaCrianca')">&nbsp;</q-btn>
+        <q-btn icon="add" @click.native="toggleModal('formCrianca')">&nbsp;</q-btn>
       </div>
       <div class="row my-1">
         <div class="col">
@@ -17,7 +17,15 @@
         :columns="headers"
         :filter="searchWords"
         row-key="uid"
-      />
+
+        selection="multiple"
+        :selected.sync="selected">
+        <template slot="top-selection" slot-scope="props">
+          <div class="col" />
+          <q-btn color="info" flat round icon="edit" @click="setEditMode()" v-if="(selected.length < 2)"/>
+          <q-btn color="negative" flat round delete icon="delete" @click="toggleModal('confirmaExcluir')" />
+        </template>
+      </q-table>
 
       <div v-if="configs.showImportAndExport">
         <!-- Importar e Exportar -->
@@ -34,9 +42,9 @@
     </q-layout>
 
     <!-- MODALS -->
-    <!-- Adicionar Criança -->
-    <q-modal v-model="modals.novaCrianca" content-css="padding: 40px; min-width: 32rem; max-width: 100%">
-      <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 2rem">Registrar criança</h4>
+    <!-- Adicionar/Editar Criança -->
+    <q-modal v-model="modals.formCrianca" content-css="padding: 40px; min-width: 32rem; max-width: 100%">
+      <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 2rem">Criança</h4>
       <q-field label="Nome">
         <q-input v-model="form.nome"/>
       </q-field>
@@ -54,7 +62,7 @@
         <q-btn flat @click="resetForm()">Cancelar</q-btn>
       </div>
     </q-modal>
-    <!-- Fim Adicionar Criança -->
+    <!-- Fim Adicionar/Editar Criança -->
 
     <!-- Opção Lista Importada -->
     <q-modal v-model="modals.oQueFazerLista" content-css="padding: 40px; min-width: 32rem; max-width: 100%">
@@ -67,6 +75,17 @@
       </div>
     </q-modal>
     <!-- Fim Opção Lista Importada -->
+
+    <!-- Confirmação Apagar -->
+    <q-modal v-model="modals.confirmaExcluir"  content-css="padding: 40px;">
+      <h4 style="margin-top: 0; margin-bottom: 10px; font-size: 2rem">Você deseja excluir {{selected.length}} {{(selected.length > 1 ? 'itens' : 'item')}}?</h4>
+      <p>Você não pode recuperar, a menos que tenha uma exportação salva em seu dispositivo.</p>
+      <div class="row reverse" style="padding-top: 20px">
+        <q-btn color="primary" @click="toggleModal('confirmaExcluir')">Cancelar</q-btn>
+        <q-btn color="red" flat @click="deletarItemSelecionado(), toggleModal('confirmaExcluir')">Apagar</q-btn>
+      </div>
+    </q-modal>
+    <!-- Fim Confirmação Apagar -->
 
   </q-page>
 </template>
@@ -143,13 +162,42 @@ export default {
     //
     // FUNÇÕES DO MODAL DE ADICIONAR CRIANÇA
     // Função que adiciona criança
-    addCrianca: function (form) {
-      const uid = Math.random()
-      const { nome, nascimento, responsavel, telefone } = form
-      const tempLista = this.lista.concat({ uid, nome, nascimento, responsavel, telefone })
-      this.setLista(tempLista)
-      this.toggleModal('novaCrianca')
+    addCrianca: function (form, limparSelecao = false) {
+      this.toggleModal('formCrianca')
+      // editar
+      if (form.uid) {
+        for (let i = 0; i < this.lista.length; i++) {
+          if (this.lista[i].uid === form.uid) {
+            this.lista.splice(i, 1)
+
+            const { uid, nome, nascimento, responsavel, telefone } = form
+            const tempLista = this.lista.concat({uid, nome, nascimento, responsavel, telefone})
+
+            this.setLista(tempLista)
+            this.selected = []
+            break
+          }
+        }
+
+      // novo
+      } else {
+        const uid = Math.random()
+        const { nome, nascimento, responsavel, telefone } = form
+        const tempLista = this.lista.concat({ uid, nome, nascimento, responsavel, telefone })
+        this.setLista(tempLista)
+      }
+
       this.resetForm()
+    },
+    // Editar Criança: Função para desativar a reatividade da form
+    setEditMode () {
+      this.form = this.selected[0].constructor()
+      for (let attr in this.selected[0]) {
+        if (this.selected[0].hasOwnProperty(attr)) {
+          this.form[attr] = this.selected[0][attr]
+        }
+      }
+      this.toggleModal('formCrianca')
     },
     // Função que limpa o formulário do modal
     resetForm () {
@@ -160,7 +208,7 @@ export default {
         responsavel: null,
         telefone: null
       }
-      this.toggleModal('novaCrianca')
+      this.toggleModal('formCrianca')
     },
     //
     // FUNÇÕES PARA IMPORTAR E EXPORTAR AS CRIANÇAS (não! não é um tráfico ilegal de pessoas)
@@ -192,7 +240,7 @@ export default {
         }
       }
     },
-    // Quando clicar em qualquer opção do modal
+    // Quando clicar em qualquer opção do modal de importação
     respostaModalLista (resposta) {
       if (resposta === 'substituir') {
         this.setLista([].concat(this.tempLista))
@@ -202,6 +250,18 @@ export default {
       this.tempLista = []
       this.toggleModal('oQueFazerLista')
       return resposta
+    },
+    // Função que apaga os itens selecionados da lista
+    deletarItemSelecionado () {
+      this.selected.forEach((item) => {
+        for (let i = 0; i < this.lista.length; i++) {
+          if (item.uid === this.lista[i].uid) {
+            this.lista.splice(i, 1)
+          }
+        }
+      })
+      this.selected = []
+      this.setLista(this.lista)
     }
   },
   data () {
@@ -209,10 +269,11 @@ export default {
       // Filtro
       searchWords: '',
 
-      // Modal está aberto?
+      // Estado do modal
       modals: {
-        novaCrianca: false,
-        oQueFazerLista: false
+        formCrianca: false,
+        oQueFazerLista: false,
+        confirmaExcluir: false
       },
 
       // Lista
@@ -221,6 +282,8 @@ export default {
 
       // Formulário
       form: {
+        // caso seja editar criança
+        uid: null,
         nome: null,
         nascimento: null,
         invaliddate: false,
@@ -232,6 +295,8 @@ export default {
       configs: {
         showImportAndExport: false
       },
+
+      selected: [],
       headers
     }
   }
